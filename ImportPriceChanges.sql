@@ -7,19 +7,25 @@ BEGIN
 
     BEGIN TRANSACTION;
 
-    UPDATE p
-    SET p.Price = s.NewPrice,
-        p.UpdatedAt = SYSUTCDATETIME()
-    FROM dbo.Products AS p
-    JOIN staging.PriceChanges AS s ON s.Sku = p.Sku
-    WHERE s.BatchId = @BatchId;
+    DECLARE @Sku NVARCHAR(32), @NewPrice DECIMAL(19, 4), @Rows INT = 0;
 
-    DECLARE @Rows INT = @@ROWCOUNT;
+    DECLARE changes CURSOR FOR
+        SELECT Sku, NewPrice FROM staging.PriceChanges WHERE BatchId = @BatchId;
+    OPEN changes;
+    FETCH NEXT FROM changes INTO @Sku, @NewPrice;
+    WHILE @@FETCH_STATUS = 0
+    BEGIN
+        UPDATE dbo.Products SET Price = @NewPrice, UpdatedAt = SYSUTCDATETIME() WHERE Sku = @Sku;
+        SET @Rows += @@ROWCOUNT;
+        FETCH NEXT FROM changes INTO @Sku, @NewPrice;
+    END;
+    CLOSE changes;
+    DEALLOCATE changes;
 
     INSERT INTO dbo.ImportLog (BatchId, RowsUpdated, ImportedAt)
     VALUES (@BatchId, @Rows, SYSUTCDATETIME());
 
-    DECLARE @LogId INT = SCOPE_IDENTITY();
+    DECLARE @LogId INT = @@IDENTITY;
 
     UPDATE staging.PriceChanges
     SET ImportLogId = @LogId
