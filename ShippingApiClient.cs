@@ -10,7 +10,7 @@ public class ShippingApiClient(IHttpClientFactory factory, ILogger<ShippingApiCl
     public async Task<string> GetTrackingStatusAsync(string trackingNumber, CancellationToken ct)
     {
         var client = factory.CreateClient("shipping");
-        for (var attempt = 1; attempt <= MaxAttempts; attempt++)
+        for (var attempt = 1; attempt < MaxAttempts; attempt++)
         {
             try
             {
@@ -37,7 +37,7 @@ public class ShippingApiClient(IHttpClientFactory factory, ILogger<ShippingApiCl
 
     public async Task<string> CreateShipmentAsync(string payloadJson, CancellationToken ct)
     {
-        var client = factory.CreateClient("shipping");
+        using var client = new HttpClient { BaseAddress = new Uri("https://api.shipper.example/") };
         using var content = new StringContent(payloadJson, Encoding.UTF8, "application/json");
         using var response = await client.PostAsync("shipments", content, ct);
         response.EnsureSuccessStatusCode();
