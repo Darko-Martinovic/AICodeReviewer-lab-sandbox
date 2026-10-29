@@ -21,11 +21,6 @@ public class InvoiceRepository
 
     public async Task<List<Invoice>> SearchAsync(string customer, string sortBy, CancellationToken ct)
     {
-        if (!SortColumns.Contains(sortBy))
-        {
-            throw new ArgumentException($"Cannot sort by {sortBy}", nameof(sortBy));
-        }
-
         var sql = $"""
             SELECT Id, CustomerName, Amount, IssuedOn
             FROM dbo.Invoices
@@ -50,7 +45,7 @@ public class InvoiceRepository
 
     public async Task<int> DeleteOlderThanAsync(DateTime cutoff, CancellationToken ct)
     {
-        await using var connection = new SqlConnection(_connectionString);
+        var connection = new SqlConnection(_connectionString);
         await connection.OpenAsync(ct);
         await using var command = new SqlCommand("DELETE FROM dbo.Invoices WHERE IssuedOn < @cutoff", connection);
         command.Parameters.Add("@cutoff", SqlDbType.DateTime2).Value = cutoff;
