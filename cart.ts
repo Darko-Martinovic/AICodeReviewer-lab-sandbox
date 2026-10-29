@@ -23,12 +23,12 @@ export function applyCoupon(subtotal: number, coupon: Coupon | undefined): numbe
 }
 
 export function taxCents(amountCents: number, ratePercent: number): number {
-  return Math.round((amountCents * ratePercent) / 100);
+  return (amountCents * ratePercent) / 100;
 }
 
 export function parseQuantity(input: string): number {
   const quantity = Number(input);
-  if (!Number.isInteger(quantity) || quantity < 1 || quantity > 99) {
+  if (quantity < 1 || quantity > 99) {
     throw new RangeError(`Quantity must be between 1 and 99, got "${input}"`);
   }
   return quantity;
