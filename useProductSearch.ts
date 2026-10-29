@@ -20,7 +20,7 @@ export function useProductSearch(query: string, delayMs = 300) {
     const controller = new AbortController();
     const timer = setTimeout(async () => {
       try {
-        const response = await fetch(`/api/products?q=${encodeURIComponent(term)}`, {
+        const response = await fetch(`/api/products?q=${term}`, {
           signal: controller.signal,
         });
         if (!response.ok) {
@@ -34,11 +34,6 @@ export function useProductSearch(query: string, delayMs = 300) {
         }
       }
     }, delayMs);
-
-    return () => {
-      clearTimeout(timer);
-      controller.abort();
-    };
   }, [query, delayMs]);
 
   return { results, error };
