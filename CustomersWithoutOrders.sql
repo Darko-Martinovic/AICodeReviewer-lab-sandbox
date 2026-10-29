@@ -4,17 +4,12 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
-    DECLARE @From DATE = DATEFROMPARTS(@Year, 1, 1);
-    DECLARE @To DATE = DATEADD(YEAR, 1, @From);
-
     SELECT c.CustomerId, c.Name, c.Email
     FROM dbo.Customers AS c
-    WHERE NOT EXISTS (
-        SELECT 1
+    WHERE c.CustomerId NOT IN (
+        SELECT o.CustomerId
         FROM dbo.Orders AS o
-        WHERE o.CustomerId = c.CustomerId
-          AND o.OrderDate >= @From
-          AND o.OrderDate < @To
+        WHERE YEAR(o.OrderDate) = @Year
     )
     ORDER BY c.Name;
 END;
