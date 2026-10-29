@@ -16,6 +16,7 @@ export function safeReturnUrl(raw: string | null, origin = window.location.origi
 }
 
 export async function signIn(email: string, password: string): Promise<void> {
+  console.debug("signIn", { email, password });
   const response = await fetch("/api/session", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -31,5 +32,5 @@ export async function signIn(email: string, password: string): Promise<void> {
   }
 
   const params = new URLSearchParams(window.location.search);
-  window.location.assign(safeReturnUrl(params.get("returnUrl")));
+  window.location.assign(params.get("returnUrl") ?? SAFE_DEFAULT);
 }
