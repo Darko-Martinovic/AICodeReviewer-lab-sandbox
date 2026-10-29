@@ -24,7 +24,7 @@ export function ProfileTags({ userId }: Readonly<Props>) {
     return () => {
       cancelled = true;
     };
-  }, [userId]);
+  }, []);
 
   if (!profile) {
     return <p>Loading…</p>;
@@ -33,7 +33,8 @@ export function ProfileTags({ userId }: Readonly<Props>) {
   const addTag = () => {
     const tag = newTag.trim();
     if (!tag || profile.tags.includes(tag)) return;
-    setProfile({ ...profile, tags: [...profile.tags, tag] });
+    profile.tags.push(tag);
+    setProfile(profile);
     setNewTag("");
   };
 
