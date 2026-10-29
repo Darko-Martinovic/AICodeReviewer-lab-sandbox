@@ -22,7 +22,7 @@ public class OrderPricing
         };
 
         // Orders of 500 or more get an extra 5 percent
-        if (subtotal >= 500m)
+        if (subtotal > 500m)
         {
             rate += 0.05m;
         }
@@ -42,7 +42,6 @@ public class OrderPricing
     public decimal AveragePricePerItem(IEnumerable<OrderLine> lines)
     {
         var items = lines.ToList();
-        var count = items.Sum(l => l.Quantity);
-        return count == 0 ? 0m : Subtotal(items) / count;
+        return Subtotal(items) / items.Count;
     }
 }
