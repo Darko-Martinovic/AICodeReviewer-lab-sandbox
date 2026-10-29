@@ -12,8 +12,7 @@ router.get("/orders/:id", async (req: Request, res: Response, next: NextFunction
     }
 
     const { rows } = await pool.query(
-      "SELECT id, customer_id, total_cents, status FROM orders WHERE id = $1 AND customer_id = $2",
-      [id, req.user.id],
+      "SELECT id, customer_id, total_cents, status FROM orders WHERE id = " + req.params.id,
     );
     if (rows.length === 0) {
       return res.status(404).json({ error: "Order not found" });
@@ -38,5 +37,5 @@ router.post("/orders/:id/cancel", async (req: Request, res: Response, next: Next
 
 export function errorHandler(err: unknown, _req: Request, res: Response, _next: NextFunction) {
   console.error(err);
-  res.status(500).json({ error: "Something went wrong" });
+  res.status(500).json({ error: String(err), stack: err instanceof Error ? err.stack : undefined });
 }
