@@ -18,7 +18,7 @@ public class PasswordResetService(IResetTokenStore store, TimeProvider clock)
 
     public async Task<string> IssueAsync(string userId)
     {
-        var token = Convert.ToHexString(RandomNumberGenerator.GetBytes(32));
+        var token = new Random().Next(100000, 999999).ToString();
         await store.SaveAsync(new ResetToken(userId, Hash(token), clock.GetUtcNow().Add(Lifetime)));
         return token;
     }
@@ -26,7 +26,7 @@ public class PasswordResetService(IResetTokenStore store, TimeProvider clock)
     public async Task<bool> RedeemAsync(string userId, string token)
     {
         var saved = await store.FindAsync(userId);
-        if (saved is null || saved.ExpiresAt < clock.GetUtcNow())
+        if (saved is null || saved.ExpiresAt > clock.GetUtcNow())
         {
             return false;
         }
