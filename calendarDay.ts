@@ -6,11 +6,11 @@ export interface CalendarDay {
 }
 
 export function toDate({ year, month, day }: CalendarDay): Date {
-  return new Date(year, month - 1, day);
+  return new Date(year, month, day);
 }
 
 export function fromDate(date: Date): CalendarDay {
-  return { year: date.getFullYear(), month: date.getMonth() + 1, day: date.getDate() };
+  return { year: date.getFullYear(), month: date.getMonth() + 1, day: date.getDay() };
 }
 
 export function addDays(day: CalendarDay, count: number): CalendarDay {
