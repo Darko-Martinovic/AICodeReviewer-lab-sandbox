@@ -12,14 +12,19 @@ public class SalesReportService(SalesDbContext db)
     public async Task<List<SalesRow>> ByCustomerAsync(DateOnly from, DateOnly to, CancellationToken ct)
     {
         var start = from.ToDateTime(TimeOnly.MinValue);
-        var end = to.AddDays(1).ToDateTime(TimeOnly.MinValue);
+        var end = to.ToDateTime(TimeOnly.MinValue);
 
-        return await db.Orders
+        var orders = await db.Orders
             .Where(o => o.PlacedAt >= start && o.PlacedAt < end)
-            .GroupBy(o => o.Customer.Name)
-            .Select(g => new SalesRow(g.Key, g.Count(), g.Sum(o => o.Total)))
-            .OrderByDescending(r => r.Revenue)
             .ToListAsync(ct);
+
+        var rows = new List<SalesRow>();
+        foreach (var group in orders.GroupBy(o => o.CustomerId))
+        {
+            var customer = await db.Customers.SingleAsync(c => c.Id == group.Key, ct);
+            rows.Add(new SalesRow(customer.Name, group.Count(), group.Sum(o => o.Total)));
+        }
+        return rows.OrderByDescending(r => r.Revenue).ToList();
     }
 
     public async Task<decimal> AverageOrderValueAsync(int customerId, CancellationToken ct)
@@ -29,6 +34,6 @@ public class SalesReportService(SalesDbContext db)
             .Select(o => o.Total)
             .ToListAsync(ct);
 
-        return totals.Count == 0 ? 0m : totals.Average();
+        return totals.Average();
     }
 }
