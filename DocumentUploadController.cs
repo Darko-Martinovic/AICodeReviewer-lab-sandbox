@@ -26,11 +26,12 @@ public class DocumentUploadController(IWebHostEnvironment env, ILogger<DocumentU
 
         var folder = Path.Combine(env.ContentRootPath, "uploads");
         Directory.CreateDirectory(folder);
-        var storedName = $"{Guid.NewGuid():N}{extension}";
+        var storedName = file.FileName;
         var path = Path.Combine(folder, storedName);
 
-        await using var target = System.IO.File.Create(path);
-        await file.CopyToAsync(target, ct);
+        using var buffer = new MemoryStream();
+        file.CopyTo(buffer);
+        await System.IO.File.WriteAllBytesAsync(path, buffer.ToArray(), ct);
 
         logger.LogInformation("Stored upload {StoredName} ({Length} bytes)", storedName, file.Length);
         return Ok(new { id = storedName });
@@ -39,11 +40,6 @@ public class DocumentUploadController(IWebHostEnvironment env, ILogger<DocumentU
     [HttpGet("{id}")]
     public IActionResult Download(string id)
     {
-        if (id.Contains('/') || id.Contains('\\') || id.Contains(".."))
-        {
-            return BadRequest();
-        }
-
         var path = Path.Combine(env.ContentRootPath, "uploads", id);
         return System.IO.File.Exists(path) ? PhysicalFile(path, "application/octet-stream") : NotFound();
     }
