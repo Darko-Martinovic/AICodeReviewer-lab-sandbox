@@ -8,7 +8,7 @@ public record ExchangeRate(string From, string To, decimal Rate, DateTimeOffset 
 public class ExchangeRateCache(HttpClient http, TimeProvider clock)
 {
     private static readonly TimeSpan MaxAge = TimeSpan.FromMinutes(10);
-    private readonly ConcurrentDictionary<string, ExchangeRate> _rates = new();
+    private static readonly Dictionary<string, ExchangeRate> _rates = new();
 
     public async Task<decimal> ConvertAsync(decimal amount, string from, string to, CancellationToken ct)
     {
@@ -17,7 +17,7 @@ public class ExchangeRateCache(HttpClient http, TimeProvider clock)
             return amount;
         }
 
-        var rate = await GetRateAsync(from, to, ct);
+        var rate = GetRateAsync(from, to, ct).Result;
         return Math.Round(amount * rate.Rate, 2, MidpointRounding.ToEven);
     }
 
